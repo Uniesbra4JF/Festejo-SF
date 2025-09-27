@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festejo 9 Noites - Gestão de Arrecadação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+        }
+        /* Custom scrollbar for a more modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4d7c0f; /* Cor verde/dourado */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #65a30d;
+        }
+        .gold-text {
+            color: #ca8a04; /* text-yellow-600 */
+        }
+        .btn-primary {
+            @apply bg-lime-700 hover:bg-lime-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-md;
+        }
+        .btn-secondary {
+             @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-md;
+        }
+        textarea::placeholder {
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold gold-text tracking-wider">FESTEJO 9 NOITES</h1>
+            <p class="text-gray-400 mt-2">Gestão de Arrecadação - Salvo Localmente</p>
+        </header>
+
+        <!-- Nights Grid -->
+        <main id="nights-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Cards will be injected by JavaScript -->
+        </main>
+
+        <!-- General Summary -->
+        <section id="summary" class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-bold mb-4 border-b-2 border-lime-700 pb-2 gold-text">Resumo Geral</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-lg">
+                <div id="total-oferta" class="bg-gray-900 p-4 rounded-lg"></div>
+                <div id="total-leilao" class="bg-gray-900 p-4 rounded-lg"></div>
+                <div id="total-barraca" class="bg-gray-900 p-4 rounded-lg"></div>
+            </div>
+            <div id="grand-total" class="bg-lime-800 text-white text-2xl font-bold p-4 rounded-lg text-center tracking-widest">
+                <!-- Grand total will be injected here -->
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <section class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button id="export-btn" class="btn-primary w-full sm:w-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.707a1 1 0 011.414 0L9 11.086V3a1 1 0 112 0v8.086l1.293-1.379a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                Exportar JSON
+            </button>
+            <label for="import-file" class="btn-secondary w-full sm:w-auto cursor-pointer text-center">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.707a1 1 0 011.414 0L9 11.086V3a1 1 0 112 0v8.086l1.293-1.379a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" transform="rotate(180 10 10)" /></svg>
+                Importar JSON
+            </label>
+            <input type="file" id="import-file" class="hidden" accept=".json">
+        </section>
+
+    </div>
+
+    <!-- Modal for Editing -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden transition-opacity duration-300">
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-11/12 max-w-md transform transition-transform duration-300 scale-95">
+            <h2 id="modal-title" class="text-2xl font-bold mb-6 gold-text">Registrar Valores</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-night-id">
+                <div class="mb-4">
+                    <label for="descricao" class="block text-gray-400 mb-2">✏️ Descrição (Ex: Noiteiros, Atração)</label>
+                    <textarea id="descricao" rows="3" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="Família Silva&#10;Atração: Zé Vaqueiro"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="oferta" class="block text-gray-400 mb-2">💰 Oferta</label>
+                    <input type="number" id="oferta" step="0.01" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="R$ 0,00">
+                </div>
+                <div class="mb-4">
+                    <label for="leilao" class="block text-gray-400 mb-2">🎉 Leilão</label>
+                    <input type="number" id="leilao" step="0.01" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="R$ 0,00">
+                </div>
+                <div class="mb-6">
+                    <label for="barraca" class="block text-gray-400 mb-2">🍴 Barraca</label>
+                    <input type="number" id="barraca" step="0.01" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="R$ 0,00">
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-lime-600 text-white py-2 px-5 rounded-lg shadow-lg opacity-0 translate-y-10 transition-all duration-500">
+        <!-- Message here -->
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nightsGrid = document.getElementById('nights-grid');
+            const totalOfertaEl = document.getElementById('total-oferta');
+            const totalLeilaoEl = document.getElementById('total-leilao');
+            const totalBarracaEl = document.getElementById('total-barraca');
+            const grandTotalEl = document.getElementById('grand-total');
+            const modal = document.getElementById('edit-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const editForm = document.getElementById('edit-form');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const editNightIdInput = document.getElementById('edit-night-id');
+            const descricaoInput = document.getElementById('descricao');
+            const ofertaInput = document.getElementById('oferta');
+            const leilaoInput = document.getElementById('leilao');
+            const barracaInput = document.getElementById('barraca');
+            const exportBtn = document.getElementById('export-btn');
+            const importFile = document.getElementById('import-file');
+            const toast = document.getElementById('toast');
+
+            let nightsData = [];
+
+            // --- Utility Functions ---
+
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            };
+            
+            const showToast = (message, isError = false) => {
+                toast.textContent = message;
+                toast.classList.remove('opacity-0', 'translate-y-10');
+                if(isError) {
+                    toast.classList.remove('bg-lime-600');
+                    toast.classList.add('bg-red-600');
+                } else {
+                    toast.classList.add('bg-lime-600');
+                    toast.classList.remove('bg-red-600');
+                }
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-10');
+                }, 3000);
+            };
+
+            // --- Data Persistence ---
+
+            const saveData = () => {
+                localStorage.setItem('festejoData', JSON.stringify(nightsData));
+            };
+
+            const loadData = () => {
+                const savedData = localStorage.getItem('festejoData');
+                if (savedData) {
+                    try {
+                        let parsedData = JSON.parse(savedData);
+                        // Basic validation and backward compatibility for old data
+                        if(Array.isArray(parsedData) && parsedData.length === 9) {
+                           parsedData.forEach(night => {
+                               if (night.descricao === undefined) {
+                                   night.descricao = '';
+                               }
+                           });
+                           nightsData = parsedData;
+                        } else {
+                            throw new Error("Invalid data format");
+                        }
+                    } catch (error) {
+                        console.error("Failed to load data from localStorage, initializing fresh.", error);
+                        initializeData();
+                    }
+                } else {
+                    initializeData();
+                }
+            };
+            
+            const initializeData = () => {
+                nightsData = Array.from({ length: 9 }, (_, i) => ({
+                    id: i + 1,
+                    descricao: '',
+                    oferta: 0,
+                    leilao: 0,
+                    barraca: 0
+                }));
+            };
+
+            // --- UI Rendering ---
+
+            const render = () => {
+                nightsGrid.innerHTML = '';
+                let totalOferta = 0;
+                let totalLeilao = 0;
+                let totalBarraca = 0;
+
+                nightsData.forEach(night => {
+                    const nightTotal = night.oferta + night.leilao + night.barraca;
+                    totalOferta += night.oferta;
+                    totalLeilao += night.leilao;
+                    totalBarraca += night.barraca;
+
+                    const lines = night.descricao.split('\n').filter(line => line.trim() !== '');
+                    const firstLine = lines[0] || 'Sem descrição';
+                    const hasMoreLines = lines.length > 1;
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-gray-800 p-5 rounded-2xl shadow-lg flex flex-col justify-between';
+                    card.innerHTML = `
+                        <div>
+                            <h3 class="text-xl font-bold gold-text mb-2">NOITE ${night.id}</h3>
+                             <div class="description-container mb-4 min-h-[44px]">
+                                <p class="text-sm text-gray-400 whitespace-pre-wrap">${firstLine}</p>
+                                ${hasMoreLines ? `<button data-expand-id="${night.id}" class="expand-btn text-lime-400 text-xs hover:underline mt-1">Ver mais</button>` : ''}
+                            </div>
+                            <div class="space-y-2 text-gray-300">
+                                <p>💰 Oferta: <span class="font-semibold float-right">${formatCurrency(night.oferta)}</span></p>
+                                <p>🎉 Leilão: <span class="font-semibold float-right">${formatCurrency(night.leilao)}</span></p>
+                                <p>🍴 Barraca: <span class="font-semibold float-right">${formatCurrency(night.barraca)}</span></p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t-2 border-gray-700">
+                           <p class="text-lg font-bold">Total da Noite: <span class="float-right gold-text">${formatCurrency(nightTotal)}</span></p>
+                           <button data-id="${night.id}" class="register-btn w-full mt-4 btn-secondary">Detalhes / Registrar</button>
+                        </div>
+                    `;
+                    nightsGrid.appendChild(card);
+                });
+
+                // Update Summary
+                totalOfertaEl.innerHTML = `<span class="text-gray-400">Total Oferta:</span> <strong class="float-right text-lg">${formatCurrency(totalOferta)}</strong>`;
+                totalLeilaoEl.innerHTML = `<span class="text-gray-400">Total Leilão:</span> <strong class="float-right text-lg">${formatCurrency(totalLeilao)}</strong>`;
+                totalBarracaEl.innerHTML = `<span class="text-gray-400">Total Barraca:</span> <strong class="float-right text-lg">${formatCurrency(totalBarraca)}</strong>`;
+                grandTotalEl.innerHTML = `TOTAL GERAL: ${formatCurrency(totalOferta + totalLeilao + totalBarraca)}`;
+            };
+
+            // --- Modal Logic ---
+            
+            const openModal = (nightId) => {
+                const night = nightsData.find(n => n.id === nightId);
+                if (!night) return;
+
+                modalTitle.textContent = `Registrar Valores - NOITE ${nightId}`;
+                editNightIdInput.value = night.id;
+                descricaoInput.value = night.descricao || '';
+                ofertaInput.value = night.oferta || '';
+                leilaoInput.value = night.leilao || '';
+                barracaInput.value = night.barraca || '';
+                
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.add('opacity-100');
+                    modal.querySelector('div').classList.remove('scale-95');
+                }, 10);
+            };
+
+            const closeModal = () => {
+                modal.classList.remove('opacity-100');
+                modal.querySelector('div').classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            };
+
+            // --- Event Listeners ---
+            
+            nightsGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('register-btn')) {
+                    const nightId = parseInt(e.target.dataset.id, 10);
+                    openModal(nightId);
+                }
+
+                if (e.target.classList.contains('expand-btn')) {
+                    const nightId = parseInt(e.target.dataset.expandId, 10);
+                    const night = nightsData.find(n => n.id === nightId);
+                    if (!night) return;
+
+                    const p = e.target.previousElementSibling; // The <p> tag
+                    const lines = night.descricao.split('\n').filter(line => line.trim() !== '');
+                    
+                    if (e.target.textContent === 'Ver mais') {
+                        p.textContent = night.descricao;
+                        e.target.textContent = 'Ver menos';
+                    } else {
+                        p.textContent = lines[0] || 'Sem descrição';
+                        e.target.textContent = 'Ver mais';
+                    }
+                }
+            });
+
+            cancelBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            editForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = parseInt(editNightIdInput.value, 10);
+                const night = nightsData.find(n => n.id === id);
+                
+                if (night) {
+                    night.descricao = descricaoInput.value;
+                    night.oferta = parseFloat(ofertaInput.value) || 0;
+                    night.leilao = parseFloat(leilaoInput.value) || 0;
+                    night.barraca = parseFloat(barracaInput.value) || 0;
+                    
+                    saveData();
+                    render();
+                    closeModal();
+                    showToast(`Valores da Noite ${id} salvos com sucesso!`);
+                }
+            });
+            
+            exportBtn.addEventListener('click', () => {
+                const dataStr = JSON.stringify(nightsData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'festejo_dados.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast("Dados exportados!");
+            });
+            
+            importFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        // Validation
+                        if (Array.isArray(importedData) && importedData.length === 9 && 'id' in importedData[0] && 'oferta' in importedData[0]) {
+                            // Backward compatibility for imported files
+                            importedData.forEach(night => {
+                                if (night.descricao === undefined) {
+                                    night.descricao = '';
+                                }
+                            });
+                            nightsData = importedData;
+                            saveData();
+                            render();
+                            showToast("Dados importados com sucesso!");
+                        } else {
+                            throw new Error("Formato do arquivo JSON inválido.");
+                        }
+                    } catch (err) {
+                        showToast(err.message, true);
+                    } finally {
+                        // Reset file input to allow importing the same file again
+                        importFile.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+
+            // --- Initial Load ---
+            loadData();
+            render();
+        });
+    </script>
+</body>
+</html>
+
+
