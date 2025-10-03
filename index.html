@@ -6,7 +6,7 @@
     <title>Festejo 9 Noites - Gestão de Arrecadação</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -70,8 +70,16 @@
         </section>
 
         <!-- Actions -->
-        <section class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-            <button id="export-btn" class="btn-primary w-full sm:w-auto">
+        <section class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4">
+            <button id="report-btn" class="btn-primary w-full sm:w-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM4 8h5v2H4V8z" clip-rule="evenodd" /></svg>
+                Gerar Relatório
+            </button>
+            <button id="copy-report-btn" class="btn-secondary w-full sm:w-auto">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" /><path d="M4 3a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H4z" /></svg>
+                Copiar Relatório
+            </button>
+            <button id="export-btn" class="btn-secondary w-full sm:w-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.707a1 1 0 011.414 0L9 11.086V3a1 1 0 112 0v8.086l1.293-1.379a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                 Exportar JSON
             </button>
@@ -138,6 +146,8 @@
             const barracaInput = document.getElementById('barraca');
             const exportBtn = document.getElementById('export-btn');
             const importFile = document.getElementById('import-file');
+            const reportBtn = document.getElementById('report-btn');
+            const copyReportBtn = document.getElementById('copy-report-btn');
             const toast = document.getElementById('toast');
 
             let nightsData = [];
@@ -167,6 +177,20 @@
                 }, 3000);
             };
 
+            const copyToClipboard = (text) => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Relatório copiado com sucesso!');
+                } catch (err) {
+                    showToast('Falha ao copiar o relatório.', true);
+                }
+                document.body.removeChild(textarea);
+            };
+
             // --- Data Persistence ---
 
             const saveData = () => {
@@ -178,19 +202,16 @@
                 if (savedData) {
                     try {
                         let parsedData = JSON.parse(savedData);
-                        // Basic validation and backward compatibility for old data
                         if(Array.isArray(parsedData) && parsedData.length === 9) {
                            parsedData.forEach(night => {
-                               if (night.descricao === undefined) {
-                                   night.descricao = '';
-                               }
+                               if (night.descricao === undefined) night.descricao = '';
                            });
                            nightsData = parsedData;
                         } else {
                             throw new Error("Invalid data format");
                         }
                     } catch (error) {
-                        console.error("Failed to load data from localStorage, initializing fresh.", error);
+                        console.error("Failed to load data, initializing fresh.", error);
                         initializeData();
                     }
                 } else {
@@ -212,9 +233,7 @@
 
             const render = () => {
                 nightsGrid.innerHTML = '';
-                let totalOferta = 0;
-                let totalLeilao = 0;
-                let totalBarraca = 0;
+                let totalOferta = 0, totalLeilao = 0, totalBarraca = 0;
 
                 nightsData.forEach(night => {
                     const nightTotal = night.oferta + night.leilao + night.barraca;
@@ -231,7 +250,7 @@
                     card.innerHTML = `
                         <div>
                             <h3 class="text-xl font-bold gold-text mb-2">NOITE ${night.id}</h3>
-                             <div class="description-container mb-4 min-h-[44px]">
+                            <div class="description-container mb-4 min-h-[44px]">
                                 <p class="text-sm text-gray-400 whitespace-pre-wrap">${firstLine}</p>
                                 ${hasMoreLines ? `<button data-expand-id="${night.id}" class="expand-btn text-lime-400 text-xs hover:underline mt-1">Ver mais</button>` : ''}
                             </div>
@@ -255,6 +274,106 @@
                 totalBarracaEl.innerHTML = `<span class="text-gray-400">Total Barraca:</span> <strong class="float-right text-lg">${formatCurrency(totalBarraca)}</strong>`;
                 grandTotalEl.innerHTML = `TOTAL GERAL: ${formatCurrency(totalOferta + totalLeilao + totalBarraca)}`;
             };
+
+            // --- Report Generation ---
+            
+            const generatePlainTextReport = () => {
+                let report = '📊 *RELATÓRIO DO FESTEJO*\n\n';
+                let totalOferta = 0, totalLeilao = 0, totalBarraca = 0;
+
+                nightsData.forEach(n => {
+                    totalOferta += n.oferta;
+                    totalLeilao += n.leilao;
+                    totalBarraca += n.barraca;
+                });
+                const grandTotal = totalOferta + totalLeilao + totalBarraca;
+
+                report += '*Resumo Geral:*\n';
+                report += `💰 Ofertas: ${formatCurrency(totalOferta)}\n`;
+                report += `🎉 Leilões: ${formatCurrency(totalLeilao)}\n`;
+                report += `🍴 Barracas: ${formatCurrency(totalBarraca)}\n`;
+                report += `*Total Geral: ${formatCurrency(grandTotal)}*\n\n`;
+                report += '------------------------\n\n';
+                report += '*Detalhes por Noite:*\n\n';
+
+                nightsData.forEach(n => {
+                    const nightTotal = n.oferta + n.leilao + n.barraca;
+                    report += `*NOITE ${n.id}* - Total: ${formatCurrency(nightTotal)}\n`;
+                    if (n.descricao) {
+                        report += `_${n.descricao.replace(/\n/g, ', ')}_\n`;
+                    }
+                    report += ` • Oferta: ${formatCurrency(n.oferta)}\n`;
+                    report += ` • Leilão: ${formatCurrency(n.leilao)}\n`;
+                    report += ` • Barraca: ${formatCurrency(n.barraca)}\n\n`;
+                });
+                
+                return report;
+            };
+
+            const generateHtmlReport = () => {
+                let totalOferta = 0, totalLeilao = 0, totalBarraca = 0;
+                nightsData.forEach(n => {
+                    totalOferta += n.oferta;
+                    totalLeilao += n.leilao;
+                    totalBarraca += n.barraca;
+                });
+                const grandTotal = totalOferta + totalLeilao + totalBarraca;
+
+                let reportHtml = `
+                    <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+                    <title>Relatório do Festejo</title>
+                    <style>
+                        body { font-family: sans-serif; margin: 2rem; color: #333; }
+                        h1, h2, h3 { color: #111; }
+                        h1 { text-align: center; }
+                        .summary, .night-details { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+                        .summary h3 { font-size: 1.5rem; text-align: center; background: #eee; padding: 0.5rem; border-radius: 4px; }
+                        .night { border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1rem; }
+                        .night:last-child { border-bottom: none; }
+                        .night h3 { margin-top: 0; }
+                        .night-total { font-weight: bold; }
+                        .description { white-space: pre-wrap; color: #555; font-style: italic; background-color: #f9f9f9; padding: 0.5rem; border-radius: 4px; margin-bottom: 1rem;}
+                        @media print {
+                            body { margin: 1rem; }
+                            .no-print { display: none; }
+                        }
+                        button { font-size: 1rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #ccc; cursor: pointer; background: #f0f0f0; margin-top: 1rem; }
+                        button:hover { background: #e0e0e0; }
+                    </style>
+                    </head><body>
+                    <h1>Relatório do Festejo - 9 Noites</h1>
+                    <div class="summary">
+                        <h2>Resumo Geral</h2>
+                        <p>Total Oferta: <strong>${formatCurrency(totalOferta)}</strong></p>
+                        <p>Total Leilão: <strong>${formatCurrency(totalLeilao)}</strong></p>
+                        <p>Total Barraca: <strong>${formatCurrency(totalBarraca)}</strong></p>
+                        <h3>Total Geral: ${formatCurrency(grandTotal)}</h3>
+                    </div>
+                    <div class="night-details">
+                    <h2>Detalhes por Noite</h2>
+                `;
+                
+                nightsData.forEach(n => {
+                    const nightTotal = n.oferta + n.leilao + n.barraca;
+                    reportHtml += `
+                        <div class="night">
+                            <h3>NOITE ${n.id}</h3>
+                            ${n.descricao ? `<p class="description">${n.descricao}</p>` : ''}
+                            <p>Oferta: ${formatCurrency(n.oferta)}</p>
+                            <p>Leilão: ${formatCurrency(n.leilao)}</p>
+                            <p>Barraca: ${formatCurrency(n.barraca)}</p>
+                            <p class="night-total">Total da Noite: ${formatCurrency(nightTotal)}</p>
+                        </div>`;
+                });
+
+                reportHtml += `
+                    </div>
+                    <button class="no-print" onclick="window.print()">Imprimir / Salvar PDF</button>
+                    </body></html>
+                `;
+                return reportHtml;
+            };
+
 
             // --- Modal Logic ---
             
@@ -340,9 +459,7 @@
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'festejo_dados.json';
-                document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 showToast("Dados exportados!");
             });
@@ -350,19 +467,12 @@
             importFile.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
                         const importedData = JSON.parse(event.target.result);
-                        // Validation
-                        if (Array.isArray(importedData) && importedData.length === 9 && 'id' in importedData[0] && 'oferta' in importedData[0]) {
-                            // Backward compatibility for imported files
-                            importedData.forEach(night => {
-                                if (night.descricao === undefined) {
-                                    night.descricao = '';
-                                }
-                            });
+                        if (Array.isArray(importedData) && importedData.length === 9 && 'id' in importedData[0]) {
+                            importedData.forEach(n => { if (n.descricao === undefined) n.descricao = ''; });
                             nightsData = importedData;
                             saveData();
                             render();
@@ -373,13 +483,23 @@
                     } catch (err) {
                         showToast(err.message, true);
                     } finally {
-                        // Reset file input to allow importing the same file again
                         importFile.value = '';
                     }
                 };
                 reader.readAsText(file);
             });
 
+            reportBtn.addEventListener('click', () => {
+                const reportHtml = generateHtmlReport();
+                const reportWindow = window.open('', '_blank');
+                reportWindow.document.write(reportHtml);
+                reportWindow.document.close();
+            });
+
+            copyReportBtn.addEventListener('click', () => {
+                const reportText = generatePlainTextReport();
+                copyToClipboard(reportText);
+            });
 
             // --- Initial Load ---
             loadData();
