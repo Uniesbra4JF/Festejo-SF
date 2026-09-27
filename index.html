@@ -1,493 +1,1085 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Festejo - Gestão de Arrecadação</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #111827; /* bg-gray-900 */
-        }
-        /* Custom scrollbar for a more modern look */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937; /* bg-gray-800 */
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4d7c0f; /* Cor verde/dourado */
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #65a30d;
-        }
-        .gold-text {
-            color: #ca8a04; /* text-yellow-600 */
-        }
-        .btn-primary {
-            @apply bg-lime-700 hover:bg-lime-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-md;
-        }
-        .btn-secondary {
-             @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-md;
-        }
-        textarea::placeholder {
-            white-space: pre-line;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Festejo · Gestão de Arrecadação</title>
+<style>
+/* ============================================================
+   FESTEJO — Gestão de Arrecadação
+   Arquivo único, 100% offline (sem CDN / frameworks externos).
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+:root{
+  --bg:#080d18;
+  --bg-2:#0d1524;
+  --card:#111c2f;
+  --card-2:#16233a;
+  --line:#22314d;
+  --line-2:#2e4062;
+  --txt:#e9eefb;
+  --muted:#93a3c0;
+  --gold:#f2c14e;
+  --gold-2:#dda428;
+  --green:#2fbf63;
+  --green-2:#1e9b4c;
+  --danger:#f04a4a;
+  --radius:16px;
+  --shadow:0 14px 34px rgba(0,0,0,.42);
+  --focus:0 0 0 3px rgba(242,193,78,.35);
+}
+body{
+  background:
+    radial-gradient(1100px 520px at 50% -12%, #1a2a49 0%, rgba(26,42,73,0) 62%),
+    linear-gradient(180deg,var(--bg) 0%, var(--bg-2) 100%);
+  background-attachment:fixed;
+}
+::selection{background:rgba(242,193,78,.3)}
+*:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
+
+/* Scrollbar */
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:#0c1424}
+*::-webkit-scrollbar-thumb{background:#2b3d5f;border-radius:20px;border:2px solid #0c1424}
+*::-webkit-scrollbar-thumb:hover{background:var(--gold-2)}
+
+/* ---------- Tipografia utilitária ---------- */
+.gold{color:var(--gold)}
+.muted{color:var(--muted)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ============================ TOPO ============================ */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  backdrop-filter:blur(10px);
+  background:linear-gradient(180deg, rgba(8,13,24,.94), rgba(8,13,24,.78));
+  border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1320px;margin:0 auto;padding:12px 18px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 260px}
+.brand-mark{
+  width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;
+  border-radius:13px;font-size:19px;color:#2a1c00;
+  background:linear-gradient(140deg,#f7d072,var(--gold-2));
+  box-shadow:0 6px 18px rgba(221,164,40,.28);
+}
+.brand h1{margin:0;font-size:1.12rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.brand p{margin:2px 0 0;font-size:.78rem;color:var(--muted)}
+.topbar-total{
+  display:flex;flex-direction:column;align-items:flex-end;
+  padding:7px 16px;border-radius:13px;
+  border:1px solid var(--line-2);
+  background:linear-gradient(180deg,rgba(242,193,78,.10),rgba(242,193,78,.02));
+}
+.topbar-total span{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.topbar-total strong{font-size:1.28rem;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+
+/* ============================ LAYOUT ============================ */
+.wrap{max-width:1320px;margin:0 auto;padding:22px 18px 60px}
+.card{background:linear-gradient(180deg,var(--card),#0f1929);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+/* ============================ KPIs ============================ */
+.kpi-row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:26px}
+.kpi{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(180deg,var(--card),#0f1929);border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;inset:auto 0 0 0;height:2px;background:linear-gradient(90deg,var(--gold),transparent);opacity:.55}
+.kpi-ico{font-size:1.35rem;width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:11px;background:#182740;border:1px solid var(--line-2)}
+.kpi-body{display:flex;flex-direction:column;min-width:0}
+.kpi-label{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.kpi-value{font-size:1.08rem;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi-sub{font-size:.7rem;color:var(--muted)}
+.kpi--total{background:linear-gradient(135deg,rgba(47,191,99,.16),rgba(242,193,78,.10))}
+.kpi--total .kpi-value{color:#7ef0a8}
+.kpi--total::after{background:linear-gradient(90deg,var(--green),var(--gold),transparent)}
+
+/* ============================ SEÇÃO ============================ */
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 14px}
+.section-head h2{margin:0;font-size:1.02rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.hint{font-size:.78rem;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line-2);background:#152238;font-size:.72rem;color:var(--muted)}
+.pill b{color:var(--gold);font-weight:700}
+
+/* ============================ GRID DE NOITES ============================ */
+.nights{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(272px,1fr))}
+.night{display:flex;flex-direction:column;background:linear-gradient(180deg,var(--card),#0e1828);border:1px solid var(--line);border-radius:var(--radius);padding:16px;position:relative;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.night:hover{transform:translateY(-3px);border-color:var(--line-2);box-shadow:0 14px 30px rgba(0,0,0,.4)}
+.night--empty{opacity:.82}
+.night-head{display:flex;align-items:flex-start;gap:10px;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.night-num{
+  font-size:.78rem;font-weight:800;letter-spacing:.06em;color:#2a1c00;
+  background:linear-gradient(140deg,#f7d072,var(--gold-2));
+  border-radius:9px;padding:5px 8px;line-height:1;flex:0 0 auto;font-variant-numeric:tabular-nums;
+}
+.night--missa .night-num{background:linear-gradient(140deg,#c9d6f2,#8ea6d6)}
+.night-title-wrap{min-width:0;flex:1}
+.night-title{margin:0;font-size:1rem;font-weight:800;letter-spacing:.05em}
+.night-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tag{font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid var(--line-2);color:var(--muted);background:#142036}
+.tag--leil{color:#ffd479;border-color:rgba(242,193,78,.45);background:rgba(242,193,78,.10)}
+.tag--barr{color:#9fe7c0;border-color:rgba(47,191,99,.4);background:rgba(47,191,99,.09)}
+.night-desc{margin:12px 0 0;font-size:.83rem;color:#c3cee3;white-space:pre-wrap;word-break:break-word}
+.night-desc.is-clamped{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.link-btn{background:none;border:0;padding:0;margin-top:6px;color:var(--gold);font:inherit;font-size:.76rem;cursor:pointer;font-weight:600}
+.link-btn:hover{text-decoration:underline}
+.night-rows{margin:14px 0 0;display:flex;flex-direction:column;gap:7px;flex:1}
+.nrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.85rem;padding:6px 10px;border-radius:9px;background:#0e1828;border:1px solid #1b2740}
+.nrow dt{color:var(--muted);display:flex;align-items:center;gap:7px}
+.nrow dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.nrow.is-zero dt,.nrow.is-zero dd{color:#4d5f7d}
+.night-total{
+  margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 12px;border-radius:11px;
+  background:linear-gradient(135deg,rgba(242,193,78,.14),rgba(242,193,78,.03));
+  border:1px solid rgba(242,193,78,.35);
+  font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+}
+.night-total b{font-size:1.06rem;letter-spacing:0;text-transform:none;color:var(--gold);font-variant-numeric:tabular-nums}
+.night-actions{margin-top:12px}
+
+/* ============================ BOTÕES ============================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font:inherit;font-weight:700;font-size:.87rem;
+  padding:10px 16px;border-radius:11px;cursor:pointer;
+  border:1px solid transparent;transition:transform .12s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease;
+  white-space:nowrap;text-decoration:none;
+}
+.btn svg{width:17px;height:17px;flex:0 0 17px}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:linear-gradient(140deg,#f7d072,var(--gold-2));color:#2a1c00;box-shadow:0 6px 16px rgba(221,164,40,.26)}
+.btn-primary:hover{filter:brightness(1.07);box-shadow:0 8px 20px rgba(221,164,40,.34)}
+.btn-green{background:linear-gradient(140deg,#3ed277,var(--green-2));color:#04240f;box-shadow:0 6px 16px rgba(30,155,76,.26)}
+.btn-green:hover{filter:brightness(1.07)}
+.btn-ghost{background:#16233a;border-color:var(--line-2);color:var(--txt)}
+.btn-ghost:hover{background:#1d2e4b;border-color:#3a5079}
+.btn-danger{background:rgba(240,74,74,.12);border-color:rgba(240,74,74,.4);color:#ff9d9d}
+.btn-danger:hover{background:rgba(240,74,74,.2)}
+.btn-block{width:100%}
+.btn-sm{padding:7px 12px;font-size:.8rem;border-radius:9px}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:28px 0 10px}
+.actions .btn{flex:1 1 190px;max-width:260px}
+.foot-note{text-align:center;font-size:.75rem;color:var(--muted);margin:14px 0 0}
+
+/* ============================ MODAL ============================ */
+.backdrop{position:fixed;inset:0;background:rgba(4,8,15,.78);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:60;padding:18px;opacity:0;transition:opacity .18s ease}
+.backdrop[hidden]{display:none}
+.backdrop.is-open{opacity:1}
+.modal{
+  width:min(520px,100%);max-height:92vh;overflow:auto;
+  background:linear-gradient(180deg,#14203a,#0e1728);
+  border:1px solid var(--line-2);border-radius:18px;
+  box-shadow:0 30px 70px rgba(0,0,0,.6);
+  padding:22px;transform:translateY(14px) scale(.98);transition:transform .18s ease;
+}
+.backdrop.is-open .modal{transform:none}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px}
+.modal-head h2{margin:0;font-size:1.08rem;font-weight:800;letter-spacing:.04em;color:var(--gold)}
+.modal-head p{margin:4px 0 0;font-size:.78rem;color:var(--muted)}
+.icon-btn{background:#1a2740;border:1px solid var(--line-2);color:var(--txt);width:34px;height:34px;border-radius:9px;cursor:pointer;display:grid;place-items:center;flex:0 0 34px}
+.icon-btn:hover{background:#22334f}
+.field{margin-top:16px}
+.field label{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap .prefix{position:absolute;left:12px;font-size:.85rem;color:var(--muted);pointer-events:none}
+input,textarea,select{
+  width:100%;font:inherit;font-size:.95rem;color:var(--txt);
+  background:#0c1524;border:1.5px solid var(--line-2);border-radius:11px;padding:11px 12px;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+textarea{resize:vertical;min-height:78px;line-height:1.5}
+input.money{padding-left:34px;font-variant-numeric:tabular-nums;font-weight:700}
+input:hover,textarea:hover{border-color:#3a5079}
+input:focus,textarea:focus{outline:0;border-color:var(--gold);box-shadow:var(--focus)}
+.field-note{
+  display:flex;gap:9px;align-items:flex-start;
+  font-size:.8rem;color:#b9c6de;background:#0e1828;border:1px dashed var(--line-2);
+  border-radius:11px;padding:10px 12px;
+}
+.field-note b{color:var(--gold)}
+.modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.modal-actions .btn{flex:1 1 auto}
+.modal-actions .spacer{flex:0 0 100%;height:0}
+body.lock{overflow:hidden}
+
+/* ============================ TOAST ============================ */
+#toast{
+  position:fixed;z-index:90;left:50%;bottom:26px;transform:translate(-50%,16px);
+  display:flex;align-items:center;gap:10px;max-width:min(92vw,520px);
+  padding:12px 18px;border-radius:12px;font-size:.88rem;font-weight:600;
+  background:linear-gradient(140deg,#22a35a,#1c8a4c);color:#fff;
+  box-shadow:0 14px 34px rgba(0,0,0,.45);
+  opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;
+}
+#toast.is-on{opacity:1;transform:translate(-50%,0)}
+#toast[data-type="error"]{background:linear-gradient(140deg,#e04a4a,#b93333)}
+#toast[data-type="info"]{background:linear-gradient(140deg,#3a6fd8,#2a51a8)}
+#toast .ico{font-size:1.05rem}
+
+/* ============================ RELATÓRIO (A4) ============================ */
+.report-overlay{position:fixed;inset:0;z-index:80;background:#0a0f1a;display:flex;flex-direction:column}
+.report-overlay[hidden]{display:none}
+.report-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  padding:12px 18px;background:#101a2c;border-bottom:1px solid var(--line);flex:0 0 auto;
+}
+.report-bar h2{margin:0;font-size:.95rem;letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
+.report-bar p{margin:2px 0 0;font-size:.74rem;color:var(--muted)}
+.report-bar-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.toggle-control{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#16233a;border:1px solid var(--line-2);
+  border-radius:11px;padding:8px 13px;
+  font-size:.82rem;font-weight:600;color:var(--txt);
+  cursor:pointer;user-select:none;transition:background .15s ease,border-color .15s ease;
+}
+.toggle-control:hover{background:#1d2e4b;border-color:#3a5079}
+.toggle-control input[type="checkbox"]{
+  appearance:none;-webkit-appearance:none;width:17px;height:17px;
+  border:1.5px solid var(--line-2);border-radius:5px;background:#0c1524;
+  margin:0;cursor:pointer;display:grid;place-items:center;outline:none;
+  transition:all .15s ease;flex:0 0 17px;
+}
+.toggle-control input[type="checkbox"]:checked{
+  background:var(--gold);border-color:var(--gold);
+}
+.toggle-control input[type="checkbox"]:checked::after{
+  content:"✓";font-size:11px;font-weight:900;color:#2a1c00;line-height:1;
+}
+.report-stage{flex:1 1 auto;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 16px}
+.report-frame{position:relative;flex:0 0 auto}
+
+.sheet{
+  width:210mm;height:296.5mm;background:#fff;color:#16202e;
+  transform-origin:top left;
+  box-shadow:0 24px 60px rgba(0,0,0,.6);
+  padding:11mm 12mm 9mm;display:flex;flex-direction:column;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  font-size:10pt;
+}
+
+/* cabeçalho do relatório */
+.r-head{flex:0 0 auto;border-bottom:2px solid #16202e;padding-bottom:6px}
+.r-head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.r-kicker{margin:0;font-size:.62em;letter-spacing:.22em;text-transform:uppercase;color:#8a6d1b;font-weight:700}
+.r-title{margin:2px 0 0;font-size:1.55em;font-weight:800;letter-spacing:-.01em;line-height:1.18;color:#101a28}
+.r-sub{margin:3px 0 0;font-size:.78em;color:#5b6a80}
+.r-meta{text-align:right;white-space:nowrap}
+.r-meta span{display:block;font-size:.66em;letter-spacing:.08em;text-transform:uppercase;color:#63718a}
+.r-meta strong{display:block;font-size:1.08em;font-weight:700;color:#16202e;margin-top:2px}
+.r-rule{height:3px;background:linear-gradient(90deg,#e0a92c,#f2c14e 45%,#2fbf63);margin-top:5px}
+
+/* corpo (escala automática para caber em 1 página) */
+.r-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:calc(10pt * var(--fit,1))}
+
+.r-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.65em;margin-top:.85em}
+.r-kpi{border:1px solid #d7dde8;border-left:4px solid #e0a92c;border-radius:8px;padding:.65em .8em;background:#fbfcfe}
+.r-kpi span{display:block;font-size:.68em;letter-spacing:.12em;text-transform:uppercase;color:#63718a;margin-bottom:.25em}
+.r-kpi strong{display:block;font-size:1.45em;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.2}
+.r-kpi.is-total{border-left-color:#2fbf63;background:#f4fbf7}
+.r-kpi.is-total strong{color:#137a3c}
+.r-kpi.is-leil{border-left-color:#8a6d1b}
+.r-kpi.is-barr{border-left-color:#2a51a8}
+
+.r-table{width:100%;border-collapse:collapse;margin-top:1.15em;font-size:.98em}
+.r-table th,.r-table td{padding:.65em .65em;text-align:right;vertical-align:middle}
+.r-table th{
+  font-size:.88em;letter-spacing:.08em;text-transform:uppercase;color:#48566c;
+  border-bottom:2px solid #16202e;white-space:nowrap;padding-bottom:.55em;
+}
+.r-table th.c-n,#tbl-no{width:2.5em;text-align:left}
+.r-table th.c-ev,.r-table td.c-ev{width:6.8em;text-align:left;font-weight:700;white-space:nowrap}
+.r-table td.c-n{text-align:left;color:#5b6a80;font-weight:600}
+.r-table tbody tr{border-bottom:1px solid #e4e8f0}
+.r-table tbody tr:nth-child(even){background:#fafbfd}
+.r-table td{font-variant-numeric:tabular-nums;font-size:1em}
+.r-table .c-tot{font-weight:800;border-left:1px solid #e4e8f0;font-size:1.02em}
+.r-table .dash{color:#a9b4c6}
+.r-table tfoot td{
+  border-top:2px solid #16202e;padding-top:.7em;padding-bottom:.7em;font-weight:800;font-size:1.12em;
+}
+.r-table tfoot .lbl{text-align:left;letter-spacing:.08em;text-transform:uppercase;font-size:.88em;color:#48566c}
+.r-table tfoot .c-tot{color:#137a3c}
+
+.r-notes{margin-top:.75em}
+.r-notes h3{margin:0 0 .35em;font-size:.72em;letter-spacing:.14em;text-transform:uppercase;color:#48566c;border-bottom:1px solid #d7dde8;padding-bottom:.2em}
+.r-notes ul{margin:0;padding:0;list-style:none;columns:2;column-gap:1.4em}
+.r-notes li{font-size:.7em;color:#3c4a61;break-inside:avoid;padding:.14em 0;border-bottom:1px dotted #e4e8f0}
+.r-notes li b{color:#16202e}
+
+/* rodapé do relatório */
+.r-foot{flex:0 0 auto;border-top:1px solid #d7dde8;margin-top:.5em;padding-top:.4em;display:flex;justify-content:space-between;align-items:flex-end;gap:1em}
+.r-foot small{font-size:.62em;color:#63718a;line-height:1.45;max-width:52%}
+.r-sign{display:flex;gap:1.1em}
+.r-sign div{text-align:center;font-size:.6em;color:#48566c}
+.r-sign i{display:block;width:4.6em;border-top:1px solid #8a94a6;margin-bottom:.2em}
+
+/* ============================ RESPONSIVO ============================ */
+@media (max-width:560px){
+  .wrap{padding:16px 12px 52px}
+  .topbar-inner{padding:10px 12px}
+  .topbar-total{padding:6px 12px}
+  .topbar-total strong{font-size:1.08rem}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .kpi{padding:11px 12px;gap:9px}
+  .kpi-ico{width:34px;height:34px;flex-basis:34px;font-size:1.1rem}
+  .kpi-value{font-size:.95rem}
+  .nights{grid-template-columns:1fr}
+  .actions .btn{max-width:none}
+  .modal{padding:18px}
+  .report-stage{padding:12px 8px}
+}
+@media (min-width:561px) and (max-width:900px){
+  .nights{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+}
+
+/* ============================ IMPRESSÃO ============================ */
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff !important;margin:0 !important;padding:0 !important}
+  body.report-open #app,body.report-open #modal,body.report-open #toast{display:none !important}
+  .report-overlay{position:static !important;background:#fff !important;display:block !important}
+  .report-bar{display:none !important}
+  .report-stage{display:block !important;overflow:visible !important;padding:0 !important;background:#fff !important}
+  .report-frame{width:auto !important;height:auto !important}
+  .sheet{transform:none !important;box-shadow:none !important;border:0 !important}
+  .toast,.no-print{display:none !important}
+}
+</style>
 </head>
-<body class="text-gray-200">
+<body>
 
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-        
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold gold-text tracking-wider">GESTÃO DO FESTEJO</h1>
-            <p class="text-gray-400 mt-2">Arrecadação Salva Localmente</p>
-        </header>
-
-        <!-- Nights Grid -->
-        <main id="nights-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            <!-- Cards will be injected by JavaScript -->
-        </main>
-
-        <!-- General Summary -->
-        <section id="summary" class="bg-gray-800 p-6 rounded-2xl shadow-lg">
-            <h2 class="text-2xl font-bold mb-4 border-b-2 border-lime-700 pb-2 gold-text">Resumo Geral</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-lg">
-                <div id="total-oferta" class="bg-gray-900 p-4 rounded-lg"></div>
-                <div id="total-leilao" class="bg-gray-900 p-4 rounded-lg"></div>
-                <div id="total-barraca" class="bg-gray-900 p-4 rounded-lg"></div>
-            </div>
-            <div id="grand-total" class="bg-lime-800 text-white text-2xl font-bold p-4 rounded-lg text-center tracking-widest">
-                <!-- Grand total will be injected here -->
-            </div>
-        </section>
-
-        <!-- Actions -->
-        <section class="mt-8 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4">
-            <button id="report-btn" class="btn-primary w-full sm:w-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM4 8h5v2H4V8z" clip-rule="evenodd" /></svg>
-                Gerar Relatório
-            </button>
-            <button id="copy-report-btn" class="btn-secondary w-full sm:w-auto">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" /><path d="M4 3a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H4z" /></svg>
-                Copiar Relatório
-            </button>
-            <button id="export-btn" class="btn-secondary w-full sm:w-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.707a1 1 0 011.414 0L9 11.086V3a1 1 0 112 0v8.086l1.293-1.379a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                Exportar JSON
-            </button>
-            <label for="import-file" class="btn-secondary w-full sm:w-auto cursor-pointer text-center">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 9.707a1 1 0 011.414 0L9 11.086V3a1 1 0 112 0v8.086l1.293-1.379a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" transform="rotate(180 10 10)" /></svg>
-                Importar JSON
-            </label>
-            <input type="file" id="import-file" class="hidden" accept=".json">
-        </section>
-
-    </div>
-
-    <!-- Modal for Editing -->
-    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 hidden transition-opacity duration-300">
-        <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-11/12 max-w-md transform transition-transform duration-300 scale-95">
-            <h2 id="modal-title" class="text-2xl font-bold mb-6 gold-text">Registrar Valores</h2>
-            <form id="edit-form">
-                <input type="hidden" id="edit-night-id">
-                <div class="mb-4">
-                    <label for="descricao" class="block text-gray-400 mb-2">✏️ Descrição (Ex: Noiteiros, Atração)</label>
-                    <textarea id="descricao" rows="3" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="Família Silva&#10;Atração: Zé Vaqueiro"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="oferta" class="block text-gray-400 mb-2">💰 Oferta</label>
-                    <input type="number" id="oferta" step="0.01" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="R$ 0,00">
-                </div>
-                <div id="leilao-wrapper" class="mb-4">
-                    <label for="leilao" class="block text-gray-400 mb-2">🎉 Leilão</label>
-                    <input type="number" id="leilao" step="0.01" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="R$ 0,00">
-                </div>
-                <div id="barraca-wrapper" class="mb-6">
-                    <label for="barraca" class="block text-gray-400 mb-2">🍴 Barraca</label>
-                    <input type="number" id="barraca" step="0.01" class="w-full bg-gray-900 border-2 border-gray-700 rounded-lg p-3 focus:border-lime-600 focus:ring-lime-600 outline-none transition-colors" placeholder="R$ 0,00">
-                </div>
-                <div class="flex justify-end gap-4">
-                    <button type="button" id="cancel-btn" class="btn-secondary">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar</button>
-                </div>
-            </form>
+<div id="app">
+  <!-- ========================= TOPO ========================= -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <div>
+          <h1>Gestão do Festejo</h1>
+          <p>Arrecadação salva automaticamente neste dispositivo</p>
         </div>
+      </div>
+      <div class="topbar-total">
+        <span>Total geral</span>
+        <strong id="top-total" class="tnum">R$ 0,00</strong>
+      </div>
     </div>
-    
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-lime-600 text-white py-2 px-5 rounded-lg shadow-lg opacity-0 translate-y-10 transition-all duration-500">
-        <!-- Message here -->
+  </header>
+
+  <div class="wrap">
+    <!-- ========================= INDICADORES ========================= -->
+    <section class="kpi-row" aria-label="Resumo geral">
+      <div class="kpi">
+        <span class="kpi-ico" aria-hidden="true">💰</span>
+        <div class="kpi-body">
+          <span class="kpi-label">Ofertas</span>
+          <strong class="kpi-value tnum" id="kpi-oferta">R$ 0,00</strong>
+          <span class="kpi-sub" id="kpi-oferta-pct">0% do total</span>
+        </div>
+      </div>
+      <div class="kpi">
+        <span class="kpi-ico" aria-hidden="true">🎉</span>
+        <div class="kpi-body">
+          <span class="kpi-label">Leilão</span>
+          <strong class="kpi-value tnum" id="kpi-leilao">R$ 0,00</strong>
+          <span class="kpi-sub" id="kpi-leilao-pct">0% do total</span>
+        </div>
+      </div>
+      <div class="kpi">
+        <span class="kpi-ico" aria-hidden="true">🍴</span>
+        <div class="kpi-body">
+          <span class="kpi-label">Barracas</span>
+          <strong class="kpi-value tnum" id="kpi-barraca">R$ 0,00</strong>
+          <span class="kpi-sub" id="kpi-barraca-pct">0% do total</span>
+        </div>
+      </div>
+      <div class="kpi kpi--total">
+        <span class="kpi-ico" aria-hidden="true">⭐</span>
+        <div class="kpi-body">
+          <span class="kpi-label">Total geral</span>
+          <strong class="kpi-value tnum" id="kpi-total">R$ 0,00</strong>
+          <span class="kpi-sub" id="kpi-total-sub">10 eventos · 0 com valores</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= NOITES ========================= -->
+    <div class="section-head">
+      <h2>Noites do festejo</h2>
+      <span class="pill">🎉 Leilão somente nas noites <b>2, 3, 4 e 9</b></span>
+    </div>
+    <section id="nights-grid" class="nights" aria-label="Eventos"></section>
+
+    <!-- ========================= AÇÕES ========================= -->
+    <section class="actions" aria-label="Ações">
+      <button id="report-btn" class="btn btn-primary" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+        Relatório (PDF 1 página)
+      </button>
+      <button id="copy-btn" class="btn btn-green" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar resumo
+      </button>
+      <button id="export-btn" class="btn btn-ghost" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+        Exportar JSON
+      </button>
+      <button id="import-btn" class="btn btn-ghost" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><path d="M12 3v12"/></svg>
+        Importar JSON
+      </button>
+      <button id="reset-btn" class="btn btn-danger" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>
+        Limpar tudo
+      </button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </section>
+    <p class="foot-note">Os dados ficam salvos apenas neste navegador. Faça backup periódico com “Exportar JSON”.</p>
+  </div>
+</div>
+
+<!-- ========================= MODAL ========================= -->
+<div id="modal" class="backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <div>
+        <h2 id="modal-title">Registrar valores</h2>
+        <p id="modal-sub">Informe a descrição e os valores arrecadados.</p>
+      </div>
+      <button class="icon-btn" id="close-x" type="button" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
 
+    <form id="edit-form" novalidate>
+      <input type="hidden" id="f-id">
+      <div class="field">
+        <label for="f-descricao">Descrição (ofertantes, atração, observações)</label>
+        <textarea id="f-descricao" rows="3" maxlength="600" placeholder="Família Silva&#10;Atração: Zé Vaqueiro"></textarea>
+      </div>
+      <div class="field">
+        <label for="f-oferta">💰 Oferta</label>
+        <div class="input-wrap">
+          <span class="prefix">R$</span>
+          <input class="money" id="f-oferta" inputmode="decimal" autocomplete="off" placeholder="0,00">
+        </div>
+      </div>
+      <div class="field" id="wrap-leilao">
+        <label for="f-leilao">🎉 Leilão</label>
+        <div class="input-wrap">
+          <span class="prefix">R$</span>
+          <input class="money" id="f-leilao" inputmode="decimal" autocomplete="off" placeholder="0,00">
+        </div>
+      </div>
+      <div class="field" id="wrap-barraca">
+        <label for="f-barraca">🍴 Barraca</label>
+        <div class="input-wrap">
+          <span class="prefix">R$</span>
+          <input class="money" id="f-barraca" inputmode="decimal" autocomplete="off" placeholder="0,00">
+        </div>
+      </div>
+      <div class="field" id="wrap-aviso" hidden>
+        <div class="field-note">
+          <span aria-hidden="true">🎉</span>
+          <span>Não há <b>leilão</b> nesta noite — o leilão é registrado apenas nas <b>noites 2, 3, 4 e 9</b>.</span>
+        </div>
+      </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Element selectors
-            const nightsGrid = document.getElementById('nights-grid');
-            const totalOfertaEl = document.getElementById('total-oferta');
-            const totalLeilaoEl = document.getElementById('total-leilao');
-            const totalBarracaEl = document.getElementById('total-barraca');
-            const grandTotalEl = document.getElementById('grand-total');
-            const modal = document.getElementById('edit-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const editForm = document.getElementById('edit-form');
-            const cancelBtn = document.getElementById('cancel-btn');
-            const editNightIdInput = document.getElementById('edit-night-id');
-            const descricaoInput = document.getElementById('descricao');
-            const ofertaInput = document.getElementById('oferta');
-            const leilaoWrapper = document.getElementById('leilao-wrapper');
-            const leilaoInput = document.getElementById('leilao');
-            const barracaWrapper = document.getElementById('barraca-wrapper');
-            const barracaInput = document.getElementById('barraca');
-            const exportBtn = document.getElementById('export-btn');
-            const importFile = document.getElementById('import-file');
-            const reportBtn = document.getElementById('report-btn');
-            const copyReportBtn = document.getElementById('copy-report-btn');
-            const toast = document.getElementById('toast');
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cancel-btn">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="clear-btn">Zerar noite</button>
+        <button type="submit" class="btn btn-green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
-            let nightsData = [];
+<!-- ========================= RELATÓRIO A4 ========================= -->
+<div id="report" class="report-overlay" hidden>
+  <div class="report-bar no-print">
+    <div>
+      <h2>Relatório de Arrecadação · A4</h2>
+      <p>Formato otimizado para caber em <b>uma única página</b> (A4 retrato).</p>
+    </div>
+    <div class="report-bar-actions">
+      <label class="toggle-control" title="Marque para incluir ou desmarque para remover as observações e ofertantes">
+        <input type="checkbox" id="toggle-obs" checked>
+        <span>Observações / ofertantes</span>
+      </label>
+      <button class="btn btn-primary" id="report-print" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+        Imprimir / Salvar PDF
+      </button>
+      <button class="btn btn-ghost" id="report-close" type="button">Fechar</button>
+    </div>
+  </div>
+  <div class="report-stage" id="report-stage">
+    <div class="report-frame" id="report-frame">
+      <article class="sheet" id="sheet"></article>
+    </div>
+  </div>
+</div>
 
-            // --- Utility Functions ---
+<div id="toast" role="status" aria-live="polite"><span class="ico" id="toast-ico">✅</span><span id="toast-msg"></span></div>
 
-            const formatCurrency = (value) => {
-                return new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(value);
-            };
-            
-            const showToast = (message, isError = false) => {
-                toast.textContent = message;
-                toast.classList.remove('opacity-0', 'translate-y-10');
-                toast.classList.toggle('bg-red-600', isError);
-                toast.classList.toggle('bg-lime-600', !isError);
+<script>
+(function(){
+"use strict";
 
-                setTimeout(() => {
-                    toast.classList.add('opacity-0', 'translate-y-10');
-                }, 3000);
-            };
+/* =========================================================
+   1. REGRAS DE NEGÓCIO
+   ========================================================= */
+const LEILAO_NIGHTS = [2, 3, 4, 9];   // <- leilão somente nestas noites
+const BARRACA_NIGHTS = [1,2,3,4,5,6,7,8,9];
+const ULTIMA_NOITE  = 10;             // id 10 = MISSA
+const STORAGE_KEY   = "festejo:dados:v1";
+const tituloNoite   = id => id === ULTIMA_NOITE ? "MISSA" : "NOITE " + id;
+const temLeilao     = id => LEILAO_NIGHTS.indexOf(id) !== -1;
+const temBarraca    = id => BARRACA_NIGHTS.indexOf(id) !== -1;
 
-            const copyToClipboard = (text) => {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast('Relatório copiado com sucesso!');
-                } catch (err) {
-                    showToast('Falha ao copiar o relatório.', true);
-                }
-                document.body.removeChild(textarea);
-            };
+/* =========================================================
+   2. UTILITÁRIOS
+   ========================================================= */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
 
-            // --- Data Persistence ---
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+  { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]
+));
 
-            const saveData = () => {
-                localStorage.setItem('festejoData', JSON.stringify(nightsData));
-            };
+const fmt = (v) => new Intl.NumberFormat("pt-BR", {
+  style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 2
+}).format(Number.isFinite(v) ? v : 0);
 
-            const loadData = () => {
-                const savedData = localStorage.getItem('festejoData');
-                if (savedData) {
-                    try {
-                        let parsedData = JSON.parse(savedData);
-                        if (Array.isArray(parsedData) && parsedData.length >= 9) {
-                            nightsData = upgradeData(parsedData);
-                        } else {
-                            throw new Error("Formato de dados inválido");
-                        }
-                    } catch (error) {
-                        console.error("Falha ao carregar dados, inicializando do zero.", error);
-                        initializeData();
-                    }
-                } else {
-                    initializeData();
-                }
-            };
-            
-            const initializeData = () => {
-                nightsData = Array.from({ length: 9 }, (_, i) => ({
-                    id: i + 1,
-                    title: `NOITE ${i + 1}`,
-                    descricao: '',
-                    oferta: 0,
-                    leilao: 0,
-                    barraca: 0,
-                    hasLeilao: true,
-                    hasBarraca: true,
-                }));
-                nightsData.push({
-                    id: 10,
-                    title: 'MISSA',
-                    descricao: '',
-                    oferta: 0,
-                    leilao: 0,
-                    barraca: 0,
-                    hasLeilao: false,
-                    hasBarraca: false,
-                });
-            };
+const fmtCurto = (v) => new Intl.NumberFormat("pt-BR", {
+  style: "currency", currency: "BRL", maximumFractionDigits: 0
+}).format(Number.isFinite(v) ? v : 0);
 
-            const upgradeData = (data) => {
-                data.forEach((night) => {
-                    if (!night.title) night.title = night.id === 10 ? 'MISSA DO VAQUEIRO' : `NOITE ${night.id}`;
-                    if (night.hasLeilao === undefined) night.hasLeilao = true;
-                    if (night.hasBarraca === undefined) night.hasBarraca = true;
-                });
-                
-                let missa = data.find(night => night.id === 10);
-                if (missa) {
-                    missa.title = 'MISSA';
-                    missa.hasLeilao = false;
-                    missa.hasBarraca = false;
-                } else {
-                     data.push({
-                        id: 10, title: 'MISSA', descricao: '', oferta: 0, leilao: 0, barraca: 0, hasLeilao: false, hasBarraca: false
-                    });
-                }
-                return data;
-            }
+const pct = (v, total) => total > 0 ? (v / total * 100) : 0;
+const pctTxt = (v, total) => (total > 0 ? (v / total * 100).toFixed(1).replace(".", ",") + "%" : "0%");
 
-            // --- UI Rendering ---
+/** aceita "1.234,56", "1234,56", "1234.56", "R$ 1.234,56" */
+function parseNum(raw){
+  if (typeof raw === "number") return Number.isFinite(raw) ? raw : 0;
+  let s = String(raw == null ? "" : raw).trim().replace(/R\$/gi, "").replace(/\s/g, "");
+  if (!s) return 0;
+  const negativo = /^-/.test(s);
+  s = s.replace(/[^\d.,-]/g, "").replace(/-/g, "");
+  if (!s) return 0;
+  if (s.indexOf(",") > -1) s = s.replace(/\./g, "").replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");   // 1.234 = milhar
+  const n = parseFloat(s);
+  if (!Number.isFinite(n)) return 0;
+  return negativo ? -n : n;
+}
 
-            const render = () => {
-                nightsGrid.innerHTML = '';
-                let totalOferta = 0, totalLeilao = 0, totalBarraca = 0;
+const dataBR = () => new Date().toLocaleString("pt-BR", { dateStyle:"short", timeStyle:"short" });
+const dataEmissaoBR = () => new Date().toLocaleDateString("pt-BR");
 
-                nightsData.forEach(night => {
-                    const nightTotal = night.oferta + (night.hasLeilao ? night.leilao : 0) + (night.hasBarraca ? night.barraca : 0);
-                    totalOferta += night.oferta;
-                    totalLeilao += night.leilao;
-                    totalBarraca += night.barraca;
+/* =========================================================
+   3. ESTADO + PERSISTÊNCIA
+   ========================================================= */
+let nights = [];
+let expandidos = new Set();
+let migrou = false;
 
-                    let descriptionBlock = '';
-                    const hasDescription = night.descricao && night.descricao.trim() !== '';
+function noitesVazias(){
+  const lista = [];
+  for (let id = 1; id <= ULTIMA_NOITE; id++){
+    lista.push({ id, descricao:"", oferta:0, leilao:0, barraca:0 });
+  }
+  return lista;
+}
 
-                    if (hasDescription) {
-                        const lines = night.descricao.trim().split('\n');
-                        const firstLine = lines[0];
-                        const hasMoreLines = lines.length > 1;
-                        descriptionBlock = `
-                            <p class="text-sm text-gray-400 whitespace-pre-wrap">${firstLine}</p>
-                            ${hasMoreLines ? `<button data-expand-id="${night.id}" class="expand-btn text-lime-400 text-xs hover:underline mt-1">Ver mais</button>` : ''}
-                        `;
-                    }
+/** normaliza qualquer entrada (localStorage, JSON importado) e garante as regras atuais */
+function sanitizar(raw){
+  const lista = Array.isArray(raw) ? raw : [];
+  const mapa = new Map();
+  let houveLeilaoFora = false;
 
-                    const card = document.createElement('div');
-                    card.className = 'bg-gray-800 p-5 rounded-2xl shadow-lg flex flex-col justify-between';
-                    card.innerHTML = `
-                        <div>
-                            <h3 class="text-xl font-bold gold-text mb-2">${night.title}</h3>
-                            <div class="description-container mb-4 min-h-[44px]">
-                                ${descriptionBlock}
-                            </div>
-                            <div class="space-y-2 text-gray-300">
-                                <p>💰 Oferta: <span class="font-semibold float-right">${formatCurrency(night.oferta)}</span></p>
-                                ${night.hasLeilao ? `<p>🎉 Leilão: <span class="font-semibold float-right">${formatCurrency(night.leilao)}</span></p>` : ''}
-                                ${night.hasBarraca ? `<p>🍴 Barraca: <span class="font-semibold float-right">${formatCurrency(night.barraca)}</span></p>` : ''}
-                            </div>
-                        </div>
-                        <div class="mt-4 pt-4 border-t-2 border-gray-700">
-                           <p class="text-lg font-bold">Total do Evento: <span class="float-right gold-text">${formatCurrency(nightTotal)}</span></p>
-                           <button data-id="${night.id}" class="register-btn w-full mt-4 btn-secondary">Detalhes / Registrar</button>
-                        </div>
-                    `;
-                    nightsGrid.appendChild(card);
-                });
+  for (const item of lista){
+    if (!item || typeof item !== "object") continue;
+    const id = Number(item.id);
+    if (!Number.isInteger(id) || id < 1 || id > ULTIMA_NOITE || mapa.has(id)) continue;
+    if (!temLeilao(id) && parseNum(item.leilao) > 0) houveLeilaoFora = true;
+    if (!temBarraca(id) && parseNum(item.barraca) > 0) houveLeilaoFora = true;
+    mapa.set(id, {
+      id,
+      descricao: typeof item.descricao === "string" ? item.descricao.slice(0, 600) : "",
+      oferta:  Math.max(0, parseNum(item.oferta)),
+      leilao:  temLeilao(id)  ? Math.max(0, parseNum(item.leilao))  : 0,
+      barraca: temBarraca(id) ? Math.max(0, parseNum(item.barraca)) : 0
+    });
+  }
+  migrou = houveLeilaoFora;
+  return noitesVazias().map(base => mapa.get(base.id) || base);
+}
 
-                // Update Summary
-                totalOfertaEl.innerHTML = `<span class="text-gray-400">Total Oferta:</span> <strong class="float-right text-lg">${formatCurrency(totalOferta)}</strong>`;
-                totalLeilaoEl.innerHTML = `<span class="text-gray-400">Total Leilão:</span> <strong class="float-right text-lg">${formatCurrency(totalLeilao)}</strong>`;
-                totalBarracaEl.innerHTML = `<span class="text-gray-400">Total Barraca:</span> <strong class="float-right text-lg">${formatCurrency(totalBarraca)}</strong>`;
-                grandTotalEl.innerHTML = `TOTAL GERAL: ${formatCurrency(totalOferta + totalLeilao + totalBarraca)}`;
-            };
+function salvar(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(nights)); }
+  catch (e) { toast("Não foi possível salvar neste navegador.", "error"); }
+}
+function carregar(){
+  try {
+    const bruto = localStorage.getItem(STORAGE_KEY);
+    if (bruto) return sanitizar(JSON.parse(bruto));
+  } catch (e) { /* segue com dados vazios */ }
+  return noitesVazias();
+}
 
-            // --- Report Generation ---
-            
-            const generatePlainTextReport = () => {
-                let report = '📊 *RELATÓRIO DO FESTEJO*\n\n';
-                let totalOferta = 0, totalLeilao = 0, totalBarraca = 0;
+const totalNoite = n => n.oferta + n.leilao + n.barraca;
+function totais(){
+  return nights.reduce((acc, n) => {
+    acc.oferta  += n.oferta;
+    acc.leilao  += n.leilao;
+    acc.barraca += n.barraca;
+    return acc;
+  }, { oferta:0, leilao:0, barraca:0 });
+}
 
-                nightsData.forEach(n => {
-                    totalOferta += n.oferta;
-                    totalLeilao += n.leilao;
-                    totalBarraca += n.barraca;
-                });
-                const grandTotal = totalOferta + totalLeilao + totalBarraca;
+/* =========================================================
+   4. TOAST
+   ========================================================= */
+const toastEl = $("#toast"), toastMsg = $("#toast-msg"), toastIco = $("#toast-ico");
+let toastTimer = null;
+function toast(msg, tipo){
+  tipo = tipo || "ok";
+  toastMsg.textContent = msg;
+  toastIco.textContent = tipo === "error" ? "⚠️" : (tipo === "info" ? "ℹ️" : "✅");
+  toastEl.dataset.type = tipo;
+  toastEl.classList.add("is-on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("is-on"), 3200);
+}
 
-                report += '*Resumo Geral:*\n';
-                report += `💰 Ofertas: ${formatCurrency(totalOferta)}\n`;
-                report += `🎉 Leilões: ${formatCurrency(totalLeilao)}\n`;
-                report += `🍴 Barracas: ${formatCurrency(totalBarraca)}\n`;
-                report += `*Total Geral: ${formatCurrency(grandTotal)}*\n\n------------------------\n\n*Detalhes por Evento:*\n\n`;
+/* =========================================================
+   5. RENDERIZAÇÃO DOS CARTÕES
+   ========================================================= */
+const grid = $("#nights-grid");
 
-                nightsData.forEach(n => {
-                    const nightTotal = n.oferta + (n.hasLeilao ? n.leilao : 0) + (n.hasBarraca ? n.barraca : 0);
-                    report += `*${n.title}* - Total: ${formatCurrency(nightTotal)}\n`;
-                    if (n.descricao && n.descricao.trim()) report += `_${n.descricao.replace(/\n/g, ', ')}_\n`;
-                    report += ` • Oferta: ${formatCurrency(n.oferta)}\n`;
-                    if (n.hasLeilao) report += ` • Leilão: ${formatCurrency(n.leilao)}\n`;
-                    if (n.hasBarraca) report += ` • Barraca: ${formatCurrency(n.barraca)}\n`;
-                    report += '\n';
-                });
-                return report;
-            };
+function linha(n, ico, rotulo, valor, aplicavel){
+  return `<div class="nrow ${aplicavel ? "" : "is-zero"}">
+      <dt>${ico} ${rotulo}${aplicavel ? "" : " <span style='opacity:.7'>(não se aplica)</span>"}</dt>
+      <dd>${aplicavel ? fmt(valor) : "—"}</dd>
+    </div>`;
+}
 
-            const generateHtmlReport = () => {
-                 let totalOferta = 0, totalLeilao = 0, totalBarraca = 0;
-                nightsData.forEach(n => {
-                    totalOferta += n.oferta;
-                    totalLeilao += n.leilao;
-                    totalBarraca += n.barraca;
-                });
-                const grandTotal = totalOferta + totalLeilao + totalBarraca;
+function cartao(n){
+  const t = totalNoite(n);
+  const desc = (n.descricao || "").trim();
+  const linhas = desc ? desc.split("\n") : [];
+  const longo  = desc.length > 58 || linhas.length > 2;
+  const aberto = expandidos.has(n.id);
+  const clamp  = longo && !aberto ? " is-clamped" : "";
 
-                let reportHtml = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório do Festejo</title><style>body{font-family:sans-serif;margin:2rem;color:#333}h1,h2,h3{color:#111}h1{text-align:center}.summary,.night-details{border:1px solid #ccc;padding:1rem;margin-bottom:1rem;border-radius:8px}.summary h3{font-size:1.5rem;text-align:center;background:#eee;padding:.5rem;border-radius:4px}.night{border-bottom:1px solid #eee;padding-bottom:1rem;margin-bottom:1rem}.night:last-child{border-bottom:none}.night h3{margin-top:0}.night-total{font-weight:bold}.description{white-space:pre-wrap;color:#555;font-style:italic;background-color:#f9f9f9;padding:.5rem;border-radius:4px;margin-bottom:1rem}@media print{body{margin:1rem}.no-print{display:none}}button{font-size:1rem;padding:.5rem 1rem;border-radius:8px;border:1px solid #ccc;cursor:pointer;background:#f0f0f0;margin-top:1rem}button:hover{background:#e0e0e0}</style></head><body><h1>Relatório do Festejo</h1><div class="summary"><h2>Resumo Geral</h2><p>Total Oferta:<strong>${formatCurrency(totalOferta)}</strong></p><p>Total Leilão:<strong>${formatCurrency(totalLeilao)}</strong></p><p>Total Barraca:<strong>${formatCurrency(totalBarraca)}</strong></p><h3>Total Geral:${formatCurrency(grandTotal)}</h3></div><div class="night-details"><h2>Detalhes por Evento</h2>`;
-                
-                nightsData.forEach(n => {
-                    const nightTotal = n.oferta + (n.hasLeilao ? n.leilao : 0) + (n.hasBarraca ? n.barraca : 0);
-                    reportHtml += `<div class="night"><h3>${n.title}</h3>${(n.descricao && n.descricao.trim())?`<p class="description">${n.descricao}</p>`:''}<p>Oferta:${formatCurrency(n.oferta)}</p>${n.hasLeilao?`<p>Leilão:${formatCurrency(n.leilao)}</p>`:''}${n.hasBarraca?`<p>Barraca:${formatCurrency(n.barraca)}</p>`:''}<p class="night-total">Total do Evento:${formatCurrency(nightTotal)}</p></div>`;
-                });
+  return `<article class="night ${t === 0 ? "night--empty" : ""} ${n.id === ULTIMA_NOITE ? "night--missa" : ""}">
+    <header class="night-head">
+      <span class="night-num">${n.id === ULTIMA_NOITE ? "MIS" : String(n.id).padStart(2, "0")}</span>
+      <div class="night-title-wrap">
+        <h3 class="night-title">${esc(tituloNoite(n.id))}</h3>
+        <div class="night-tags">
+          ${temLeilao(n.id)  ? '<span class="tag tag--leil">Leilão</span>'  : ""}
+          ${temBarraca(n.id) ? '<span class="tag tag--barr">Barraca</span>' : ""}
+        </div>
+      </div>
+    </header>
 
-                reportHtml += `</div><button class="no-print" onclick="window.print()">Imprimir / Salvar PDF</button></body></html>`;
-                return reportHtml;
-            };
+    ${desc ? `<p class="night-desc${clamp}">${esc(desc)}</p>
+      ${longo ? `<button type="button" class="link-btn" data-expand="${n.id}">${aberto ? "Mostrar menos ▲" : "Ver descrição completa ▼"}</button>` : ""}`
+      : '<p class="night-desc muted" style="opacity:.55;font-style:italic">Sem descrição lançada.</p>'}
 
-            // --- Modal Logic ---
-            
-            const openModal = (nightId) => {
-                const night = nightsData.find(n => n.id == nightId);
-                if (!night) return;
+    <dl class="night-rows">
+      ${linha(n, "💰", "Ofertas", n.oferta, true)}
+      ${linha(n, "🎉", "Leilão",  n.leilao, temLeilao(n.id))}
+      ${linha(n, "🍴", "Barraca", n.barraca, temBarraca(n.id))}
+    </dl>
 
-                modalTitle.textContent = `Registrar Valores - ${night.title.toUpperCase()}`;
-                editNightIdInput.value = night.id;
-                descricaoInput.value = night.descricao || '';
-                ofertaInput.value = night.oferta || '';
-                
-                leilaoWrapper.style.display = night.hasLeilao ? 'block' : 'none';
-                barracaWrapper.style.display = night.hasBarraca ? 'block' : 'none';
-                leilaoInput.value = night.hasLeilao ? night.leilao || '' : 0;
-                barracaInput.value = night.hasBarraca ? night.barraca || '' : 0;
-                
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.add('opacity-100');
-                    modal.querySelector('div').classList.remove('scale-95');
-                }, 10);
-            };
+    <div class="night-total"><span>Total do evento</span><b>${fmt(t)}</b></div>
+    <div class="night-actions">
+      <button type="button" class="btn btn-ghost btn-block btn-sm" data-edit="${n.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        Registrar valores
+      </button>
+    </div>
+  </article>`;
+}
 
-            const closeModal = () => {
-                modal.classList.remove('opacity-100');
-                modal.querySelector('div').classList.add('scale-95');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            };
+function render(){
+  grid.innerHTML = nights.map(cartao).join("");
 
-            // --- Event Listeners ---
-            
-            nightsGrid.addEventListener('click', (e) => {
-                const btn = e.target.closest('button');
-                if (!btn) return;
+  const t = totais();
+  const geral = t.oferta + t.leilao + t.barraca;
+  const comValores = nights.filter(n => totalNoite(n) > 0).length;
 
-                if (btn.classList.contains('register-btn')) {
-                    openModal(parseInt(btn.dataset.id, 10));
-                } else if (btn.classList.contains('expand-btn')) {
-                    const night = nightsData.find(n => n.id == btn.dataset.expandId);
-                    if (!night) return;
-                    const p = btn.previousElementSibling;
-                    if (btn.textContent === 'Ver mais') {
-                        p.textContent = night.descricao.trim();
-                        btn.textContent = 'Ver menos';
-                    } else {
-                        const firstLine = night.descricao.trim().split('\n')[0];
-                        p.textContent = firstLine;
-                        btn.textContent = 'Ver mais';
-                    }
-                }
-            });
+  $("#top-total").textContent  = fmt(geral);
+  $("#kpi-oferta").textContent = fmt(t.oferta);
+  $("#kpi-leilao").textContent = fmt(t.leilao);
+  $("#kpi-barraca").textContent = fmt(t.barraca);
+  $("#kpi-total").textContent  = fmt(geral);
+  $("#kpi-oferta-pct").textContent  = pctTxt(t.oferta, geral)  + " do total";
+  $("#kpi-leilao-pct").textContent  = pctTxt(t.leilao, geral)  + " do total";
+  $("#kpi-barraca-pct").textContent = pctTxt(t.barraca, geral) + " do total";
+  $("#kpi-total-sub").textContent  = nights.length + " eventos · " + comValores + " com valores";
+}
 
-            cancelBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+/* =========================================================
+   6. MODAL
+   ========================================================= */
+const modal = $("#modal"), form = $("#edit-form");
+const fId = $("#f-id"), fDesc = $("#f-descricao");
+const fOferta = $("#f-oferta"), fLeilao = $("#f-leilao"), fBarraca = $("#f-barraca");
+let ultimoFoco = null;
 
-            editForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const id = parseInt(editNightIdInput.value, 10);
-                const night = nightsData.find(n => n.id === id);
-                if (night) {
-                    night.descricao = descricaoInput.value;
-                    night.oferta = parseFloat(ofertaInput.value) || 0;
-                    night.leilao = parseFloat(leilaoInput.value) || 0;
-                    night.barraca = parseFloat(barracaInput.value) || 0;
-                    saveData();
-                    render();
-                    closeModal();
-                    showToast(`Valores de "${night.title}" salvos!`);
-                }
-            });
-            
-            exportBtn.addEventListener('click', () => {
-                const dataStr = JSON.stringify(nightsData, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(dataBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'festejo_dados.json';
-                a.click();
-                URL.revokeObjectURL(url);
-                showToast("Dados exportados!");
-            });
-            
-            importFile.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        let importedData = JSON.parse(event.target.result);
-                        if (Array.isArray(importedData) && importedData.length >= 9 && 'id' in importedData[0]) {
-                            nightsData = upgradeData(importedData);
-                            saveData();
-                            render();
-                            showToast("Dados importados com sucesso!");
-                        } else {
-                            throw new Error("Formato do arquivo JSON inválido.");
-                        }
-                    } catch (err) {
-                        showToast(err.message, true);
-                    } finally {
-                        importFile.value = '';
-                    }
-                };
-                reader.readAsText(file);
-            });
+function abrirModal(id){
+  const n = nights.find(x => x.id === id);
+  if (!n) return;
+  ultimoFoco = document.activeElement;
 
-            reportBtn.addEventListener('click', () => {
-                const reportHtml = generateHtmlReport();
-                const reportWindow = window.open('', '_blank');
-                reportWindow.document.write(reportHtml);
-                reportWindow.document.close();
-            });
+  $("#modal-title").textContent = "Registrar valores · " + tituloNoite(n.id);
+  $("#modal-sub").textContent = "Preencha a descrição e os valores arrecadados.";
+  fId.value = n.id;
+  fDesc.value = n.descricao || "";
+  fOferta.value = n.oferta  > 0 ? n.oferta.toFixed(2).replace(".", ",")  : "";
+  fLeilao.value = n.leilao  > 0 ? n.leilao.toFixed(2).replace(".", ",")  : "";
+  fBarraca.value = n.barraca > 0 ? n.barraca.toFixed(2).replace(".", ",") : "";
 
-            copyReportBtn.addEventListener('click', () => {
-                const reportText = generatePlainTextReport();
-                copyToClipboard(reportText);
-            });
+  $("#wrap-leilao").hidden  = !temLeilao(n.id);
+  $("#wrap-barraca").hidden = !temBarraca(n.id);
+  $("#wrap-aviso").hidden   = temLeilao(n.id);
 
-            // --- Initial Load ---
-            loadData();
-            render();
-        });
-    </script>
+  modal.hidden = false;
+  document.body.classList.add("lock");
+  requestAnimationFrame(() => { modal.classList.add("is-open"); fDesc.focus(); });
+}
+
+function fecharModal(){
+  modal.classList.remove("is-open");
+  document.body.classList.remove("lock");
+  setTimeout(() => { modal.hidden = true; }, 170);
+  if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus();
+}
+
+grid.addEventListener("click", (e) => {
+  const ed = e.target.closest("[data-edit]");
+  if (ed) return abrirModal(parseInt(ed.dataset.edit, 10));
+  const ex = e.target.closest("[data-expand]");
+  if (ex){
+    const id = parseInt(ex.dataset.expand, 10);
+    expandidos.has(id) ? expandidos.delete(id) : expandidos.add(id);
+    render();
+  }
+});
+
+$("#cancel-btn").addEventListener("click", fecharModal);
+$("#close-x").addEventListener("click", fecharModal);
+modal.addEventListener("mousedown", (e) => { if (e.target === modal) fecharModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !modal.hidden) fecharModal();
+});
+
+$$("input.money", modal).forEach(inp => {
+  inp.addEventListener("blur", () => {
+    const v = parseNum(inp.value);
+    inp.value = v > 0 ? v.toFixed(2).replace(".", ",") : "";
+  });
+  inp.addEventListener("focus", () => inp.select());
+});
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const n = nights.find(x => x.id === parseInt(fId.value, 10));
+  if (!n) return;
+  n.descricao = fDesc.value.trim();
+  n.oferta    = Math.max(0, parseNum(fOferta.value));
+  n.leilao    = temLeilao(n.id)  ? Math.max(0, parseNum(fLeilao.value))  : 0;
+  n.barraca   = temBarraca(n.id) ? Math.max(0, parseNum(fBarraca.value)) : 0;
+  salvar(); render(); fecharModal();
+  toast(tituloNoite(n.id) + ": valores salvos (" + fmt(totalNoite(n)) + ").");
+});
+
+$("#clear-btn").addEventListener("click", () => {
+  const n = nights.find(x => x.id === parseInt(fId.value, 10));
+  if (!n) return;
+  n.descricao = ""; n.oferta = 0; n.leilao = 0; n.barraca = 0;
+  salvar(); render(); fecharModal();
+  toast(tituloNoite(n.id) + " zerada.", "info");
+});
+
+/* =========================================================
+   7. IMPORT / EXPORT / RESET
+   ========================================================= */
+$("#export-btn").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(nights, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "festejo_arrecadacao_" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  toast("Backup exportado com sucesso.");
+});
+
+const importFile = $("#import-file");
+$("#import-btn").addEventListener("click", () => importFile.click());
+importFile.addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const leitor = new FileReader();
+  leitor.onload = (ev) => {
+    try {
+      const json = JSON.parse(ev.target.result);
+      if (!Array.isArray(json)) throw new Error("O arquivo precisa conter uma lista de noites.");
+      const antes = JSON.stringify(nights);
+      nights = sanitizar(json);
+      if (JSON.stringify(nights) === antes) throw new Error("Nenhum dado válido encontrado no arquivo.");
+      salvar(); render();
+      toast("Dados importados com sucesso.");
+    } catch (err) {
+      toast(err.message || "Falha ao importar o arquivo.", "error");
+    } finally { importFile.value = ""; }
+  };
+  leitor.onerror = () => { toast("Não foi possível ler o arquivo.", "error"); importFile.value = ""; };
+  leitor.readAsText(file);
+});
+
+$("#reset-btn").addEventListener("click", () => {
+  if (!confirm("Apagar TODOS os valores lançados? Esta ação não pode ser desfeita.\n\n(Dica: exporte um JSON antes, se quiser backup.)")) return;
+  nights = noitesVazias(); expandidos.clear();
+  salvar(); render();
+  toast("Todos os valores foram apagados.", "info");
+});
+
+/* =========================================================
+   8. RESUMO PARA CÓPIA (WhatsApp)
+   ========================================================= */
+$("#copy-btn").addEventListener("click", async () => {
+  const t = totais();
+  const geral = t.oferta + t.leilao + t.barraca;
+  const linhas = [];
+  linhas.push("📊 *RELATÓRIO DO FESTEJO*");
+  linhas.push("_" + dataBR() + "_");
+  linhas.push("");
+  linhas.push("💰 Ofertas: *" + fmt(t.oferta) + "*");
+  linhas.push("🎉 Leilões: *" + fmt(t.leilao) + "*");
+  linhas.push("🍴 Barracas: *" + fmt(t.barraca) + "*");
+  linhas.push("💵 *TOTAL GERAL: " + fmt(geral) + "*");
+  linhas.push("");
+  linhas.push("*POR EVENTO*");
+  nights.forEach(n => {
+    linhas.push("• *" + tituloNoite(n.id) + "* — " + fmt(totalNoite(n)));
+    if (n.descricao && n.descricao.trim()) linhas.push("   " + n.descricao.trim().replace(/\n/g, " · "));
+  });
+  const texto = linhas.join("\n");
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(texto); }
+    else throw new Error("fallback");
+    toast("Resumo copiado com sucesso!");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = texto;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (_) {}
+    ta.remove();
+    toast(ok ? "Resumo copiado com sucesso!" : "Não foi possível copiar automaticamente.", ok ? "ok" : "error");
+  }
+});
+
+/* =========================================================
+   9. RELATÓRIO A4 — UMA ÚNICA PÁGINA
+   ========================================================= */
+const overlay = $("#report"), sheet = $("#sheet"), stage = $("#report-stage"), frame = $("#report-frame");
+const toggleObs = $("#toggle-obs");
+let exibirObservacoes = true;
+
+function construirRelatorio(){
+  const t = totais();
+  const geral = t.oferta + t.leilao + t.barraca;
+  const obs = nights.filter(n => n.descricao && n.descricao.trim());
+
+  /* linhas da tabela sem a coluna descrição/ofertantes */
+  const linhas = nights.map(n => {
+    const tot = totalNoite(n);
+    return `<tr>
+      <td class="c-n">${n.id}</td>
+      <td class="c-ev">${esc(tituloNoite(n.id))}</td>
+      <td>${n.oferta > 0 ? fmt(n.oferta) : '<span class="dash">—</span>'}</td>
+      <td>${temLeilao(n.id)  ? (n.leilao  > 0 ? fmt(n.leilao)  : '<span class="dash">—</span>') : '<span class="dash">n/a</span>'}</td>
+      <td>${temBarraca(n.id) ? (n.barraca > 0 ? fmt(n.barraca) : '<span class="dash">—</span>') : '<span class="dash">n/a</span>'}</td>
+      <td class="c-tot">${fmt(tot)}</td>
+    </tr>`;
+  }).join("");
+
+  const blocoObs = (exibirObservacoes && obs.length)
+    ? `<div class="r-notes" data-notes>
+         <h3>Observações / ofertantes</h3>
+         <ul>${obs.map(n => `<li><b>${esc(tituloNoite(n.id))}:</b> ${esc(n.descricao.trim().replace(/\s*\n\s*/g, " · "))}</li>`).join("")}</ul>
+       </div>`
+    : "";
+
+  return `<header class="r-head">
+      <div class="r-head-top">
+        <div>
+          <h2 class="r-title">Relatório do Festejo de São Francisco 2026</h2>
+        </div>
+        <div class="r-meta">
+          <span>Data de emissão</span>
+          <strong>${esc(dataEmissaoBR())}</strong>
+        </div>
+      </div>
+      <div class="r-rule"></div>
+    </header>
+
+    <div class="r-body" id="r-body">
+      <div class="r-kpis">
+        <div class="r-kpi"><span>Ofertas</span><strong>${fmt(t.oferta)}</strong></div>
+        <div class="r-kpi is-leil"><span>Leilão</span><strong>${fmt(t.leilao)}</strong></div>
+        <div class="r-kpi is-barr"><span>Barracas</span><strong>${fmt(t.barraca)}</strong></div>
+        <div class="r-kpi is-total"><span>Total geral</span><strong>${fmt(geral)}</strong></div>
+      </div>
+
+      <table class="r-table">
+        <thead>
+          <tr>
+            <th class="c-n">#</th>
+            <th class="c-ev">Evento</th>
+            <th>Ofertas</th>
+            <th>Leilão</th>
+            <th>Barraca</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+        <tfoot>
+          <tr>
+            <td class="c-n"></td>
+            <td class="lbl">TOTAIS</td>
+            <td>${fmt(t.oferta)}</td>
+            <td>${fmt(t.leilao)}</td>
+            <td>${fmt(t.barraca)}</td>
+            <td class="c-tot">${fmt(geral)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      ${blocoObs}
+    </div>
+
+    <footer class="r-foot">
+      <small>
+        Leilão registrado somente nas noites 2, 3, 4 e 9 · “—” sem coleta · “n/a” não se aplica.<br>
+        Relatório gerado automaticamente em ${esc(dataBR())}.
+      </small>
+      <div class="r-sign">
+        <div><i></i>Responsável</div>
+        <div><i></i>Conferência</div>
+        <div><i></i>Tesouraria</div>
+      </div>
+    </footer>`;
+}
+
+/* escala automática do conteúdo p/ caber em exatamente 1 página */
+function ajustarFolha(){
+  const body = $("#r-body", sheet);
+  if (!body) return 1;
+  sheet.style.setProperty("--fit", "1");
+  const disponivel = body.clientHeight;
+  const necessario = body.scrollHeight;
+  let k = 1;
+  if (necessario > disponivel && disponivel > 0) k = (disponivel - 1) / necessario;
+
+  /* se ficou muito apertado, remove o bloco de observações e refaz */
+  if (k < 0.74 && $("[data-notes]", sheet)){
+    $("[data-notes]", sheet).remove();
+    const disp2 = body.clientHeight, nec2 = body.scrollHeight;
+    k = (nec2 > disp2 && disp2 > 0) ? (disp2 - 1) / nec2 : 1;
+  }
+  sheet.style.setProperty("--fit", k.toFixed(4));
+  return k;
+}
+
+/* escala apenas da pré-visualização na tela */
+function ajustarPrevia(){
+  if (overlay.hidden) return;
+  const w = sheet.offsetWidth, h = sheet.offsetHeight;
+  const aw = stage.clientWidth - 28, ah = stage.clientHeight - 28;
+  const k = Math.min(aw / w, ah / h, 1);
+  frame.style.width  = (w * k) + "px";
+  frame.style.height = (h * k) + "px";
+  sheet.style.transform = "scale(" + k + ")";
+}
+
+function abrirRelatorio(){
+  if (toggleObs) toggleObs.checked = exibirObservacoes;
+  sheet.innerHTML = construirRelatorio();
+  overlay.hidden = false;
+  document.body.classList.add("lock", "report-open");
+  requestAnimationFrame(() => {
+    ajustarFolha();
+    ajustarPrevia();
+    stage.scrollTop = 0;
+  });
+  toast("Relatório pronto — clique em “Imprimir / Salvar PDF”.", "info");
+}
+
+function fecharRelatorio(){
+  overlay.hidden = true;
+  document.body.classList.remove("lock", "report-open");
+  sheet.style.transform = "";
+}
+
+if (toggleObs){
+  toggleObs.addEventListener("change", () => {
+    exibirObservacoes = toggleObs.checked;
+    sheet.innerHTML = construirRelatorio();
+    requestAnimationFrame(() => {
+      ajustarFolha();
+      ajustarPrevia();
+    });
+  });
+}
+
+$("#report-btn").addEventListener("click", abrirRelatorio);
+$("#report-close").addEventListener("click", fecharRelatorio);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !overlay.hidden) fecharRelatorio();
+});
+$("#report-print").addEventListener("click", () => {
+  ajustarFolha();
+  toast("Escolha “Salvar como PDF” no destino da impressão e mantenha as margens em “Padrão”.", "info");
+  setTimeout(() => window.print(), 350);
+});
+window.addEventListener("beforeprint", ajustarFolha);
+window.addEventListener("resize", ajustarPrevia);
+window.addEventListener("afterprint", () => requestAnimationFrame(ajustarPrevia));
+
+/* =========================================================
+   10. INICIALIZAÇÃO
+   ========================================================= */
+nights = carregar();
+render();
+if (migrou) toast("Leilão agora é registrado apenas nas noites 2, 3, 4 e 9. Valores fora dessas noites foram removidos dos totais.", "info");
+})();
+</script>
 </body>
 </html>
-
-
-
